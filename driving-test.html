@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tennessee Driver Test Practice</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    color: #111;
+    padding: 20px;
+    transition: 0.3s;
+  }
+
+  body.dark {
+    background: #121212;
+    color: #eee;
+  }
+
+  h1 {
+    text-align: center;
+  }
+
+  select, button {
+    padding: 10px;
+    font-size: 16px;
+    margin: 10px 0;
+  }
+
+  .question {
+    background: #fff;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+  }
+
+  body.dark .question {
+    background: #1f1f1f;
+  }
+
+  .correct {
+    border-left: 6px solid green;
+  }
+
+  .wrong {
+    border-left: 6px solid red;
+  }
+
+  #submitBtn {
+    display: none;
+  }
+
+  #darkToggle {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+  }
+</style>
+</head>
+
+<body>
+
+<button id="darkToggle">🌙 Dark Mode</button>
+
+<h1>Tennessee Driver Test Practice</h1>
+
+<p><strong>Disclaimer:</strong> These are practice questions based on common Tennessee DMV material. Actual test questions may differ.</p>
+
+<select id="testType">
+  <option value="permit">Tennessee Permit Test (30 Questions)</option>
+  <option value="driver">Tennessee Driver Test (30 Questions)</option>
+</select>
+
+<br>
+
+<button id="startBtn">Start Test</button>
+
+<form id="quiz"></form>
+
+<button id="submitBtn">Submit Test</button>
+
+<div id="results"></div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  /* ---------- DARK MODE ---------- */
+  const darkToggle = document.getElementById("darkToggle");
+  darkToggle.onclick = () => {
+    document.body.classList.toggle("dark");
+    darkToggle.textContent =
+      document.body.classList.contains("dark")
+        ? "☀️ Light Mode"
+        : "🌙 Dark Mode";
+  };
+
+  /* ---------- QUESTIONS ---------- */
+
+  const permitQuestions = [
+    {q:"What does a flashing red light mean?", a:"Stop completely", c:["Slow down","Stop completely","Yield"]},
+    {q:"Legal BAC limit in Tennessee for drivers 21+?", a:"0.08%", c:["0.05%","0.08%","0.10%"]},
+    {q:"Residential speed limit unless posted?", a:"30 mph", c:["25 mph","30 mph","35 mph"]},
+    {q:"School bus red lights mean?", a:"Stop in all directions", c:["Slow","Stop in all directions","Pass carefully"]},
+    {q:"Seat belts are required for?", a:"All passengers", c:["Driver only","Front seat only","All passengers"]},
+    {q:"Broken white line means?", a:"Lane change allowed", c:["No passing","Lane change allowed","Stop"]},
+    {q:"Yellow traffic light means?", a:"Prepare to stop", c:["Stop immediately","Prepare to stop","Speed up"]},
+    {q:"Pedestrians at crosswalk?", a:"Always yield", c:["Honk","Yield","Always yield"]},
+    {q:"Texting while driving in TN?", a:"Illegal", c:["Legal","Illegal","Only highways"]},
+    {q:"Minimum following distance?", a:"3 seconds", c:["1","2","3 seconds"]},
+    {q:"Double yellow lines mean?", a:"No passing", c:["Passing ok","No passing","Yield"]},
+    {q:"Warning signs shape?", a:"Diamond", c:["Circle","Diamond","Triangle"]},
+    {q:"Railroad crossing sign means?", a:"Slow and look", c:["Stop","Ignore","Slow and look"]},
+    {q:"Who has right-of-way at a 4-way stop?", a:"Vehicle on right", c:["First","Right","Fastest"]},
+    {q:"Headlights required when?", a:"Sunset to sunrise", c:["Rain","Sunset to sunrise","Highway only"]},
+    {q:"Passing a school bus allowed?", a:"Only when lights off", c:["Never","Only when lights off","Anytime"]},
+    {q:"Red curb means?", a:"No parking", c:["Loading","No parking","Handicap"]},
+    {q:"Hydroplaning recovery?", a:"Ease off gas", c:["Brake hard","Ease off gas","Turn wheel"]},
+    {q:"Minimum tire tread depth?", a:"2/32 inch", c:["1/32","2/32","4/32"]},
+    {q:"Roundabout rule?", a:"Yield to traffic inside", c:["Stop","Yield to traffic inside","Speed up"]},
+    {q:"Parking uphill with curb?", a:"Wheels away", c:["Toward","Straight","Wheels away"]},
+    {q:"Blind pedestrian with cane?", a:"Stop and yield", c:["Honk","Yield","Stop and yield"]},
+    {q:"Driving in fog use?", a:"Low beams", c:["High","Low beams","None"]},
+    {q:"Fire hydrant parking distance?", a:"15 feet", c:["10","15","20"]},
+    {q:"Driving curves safely?", a:"Slow before curve", c:["Brake mid","Slow before curve","Speed up"]},
+    {q:"Right turn on red allowed?", a:"After stopping", c:["Never","After stopping","Anytime"]},
+    {q:"Yellow center line means?", a:"Opposing traffic", c:["Same","Opposing traffic","Stop"]},
+    {q:"Emergency vehicle behind you?", a:"Pull over", c:["Speed","Ignore","Pull over"]},
+    {q:"Interstate speed limit in TN?", a:"70 mph", c:["65","70 mph","75"]},
+    {q:"Turn signals should be used?", a:"Before turning", c:["After","Before turning","Only traffic"]}
+  ];
+
+  const driverQuestions = [
+    {q:"Proper hand position on wheel?", a:"9 and 3", c:["10 and 2","9 and 3","One hand"]},
+    {q:"Lane change check order?", a:"Mirror then blind spot", c:["Blind only","Mirror then blind spot","Mirror only"]},
+    {q:"Parallel parking distance?", a:"12 inches", c:["6","12 inches","24"]},
+    {q:"Skid recovery method?", a:"Steer into skid", c:["Brake","Opposite","Steer into skid"]},
+    {q:"Parking downhill wheels?", a:"Toward curb", c:["Away","Toward curb","Straight"]},
+    {q:"Backing up safely requires?", a:"Look over shoulder", c:["Mirror","Camera","Over shoulder"]},
+    {q:"Four-second rule is for?", a:"Following distance", c:["Passing","Braking","Following distance"]},
+    {q:"Left turn must yield to?", a:"Oncoming traffic", c:["Pedestrians","Oncoming traffic","Right turns"]},
+    {q:"Passing on right allowed?", a:"When safe", c:["Never","When safe","Only highway"]},
+    {q:"Controlled intersection uses?", a:"Signals or signs", c:["Police","Signals or signs","None"]},
+    {q:"School zone speed limit?", a:"15 mph", c:["10","15 mph","20"]},
+    {q:"Stopping distance increases with?", a:"Speed", c:["Time","Speed","Weather"]},
+    {q:"Avoid head-on collision?", a:"Steer right", c:["Brake","Left","Steer right"]},
+    {q:"Downhill braking method?", a:"Lower gear", c:["Neutral","Lower gear","Hard brake"]},
+    {q:"Merging onto highway?", a:"Match speed", c:["Stop","Match speed","Yield fully"]},
+    {q:"Signal lane change when?", a:"Before moving", c:["During","After","Before moving"]},
+    {q:"Passing solid yellow line?", a:"Illegal", c:["Legal","Illegal","Night only"]},
+    {q:"Pedestrian right-of-way?", a:"Always", c:["Sometimes","Always","Never"]},
+    {q:"Safe backing speed?", a:"Slow", c:["Fast","Slow","Idle"]},
+    {q:"Work zone fines?", a:"Higher", c:["Same","Higher","Lower"]},
+    {q:"Railroad crossing stop when?", a:"Train approaching", c:["Always","Train approaching","Never"]},
+    {q:"Large trucks make?", a:"Wide turns", c:["Tight","Wide turns","Normal"]},
+    {q:"Rain braking distance?", a:"Increases", c:["Same","Increases","Decreases"]},
+    {q:"Crosswalk markings show?", a:"Pedestrian zone", c:["Parking","Pedestrian zone","Bike lane"]},
+    {q:"Speed in fog?", a:"Reduce", c:["Increase","Reduce","Same"]},
+    {q:"Blind spots exist?", a:"Yes", c:["No","Yes","Only trucks"]},
+    {q:"Three-point turn purpose?", a:"Turn around", c:["Park","Turn around","Pass"]},
+    {q:"Right turn lane must?", a:"Yield pedestrians", c:["Go","Yield pedestrians","Stop only"]},
+    {q:"Lane arrows indicate?", a:"Direction control", c:["Speed","Warning","Direction control"]},
+    {q:"Following motorcycles requires?", a:"More space", c:["Same","Less","More space"]}
+  ];
+
+  /* ---------- QUIZ LOGIC ---------- */
+
+  const quiz = document.getElementById("quiz");
+  const startBtn = document.getElementById("startBtn");
+  const submitBtn = document.getElementById("submitBtn");
+  const results = document.getElementById("results");
+  const testType = document.getElementById("testType");
+
+  startBtn.onclick = () => {
+    quiz.innerHTML = "";
+    results.innerHTML = "";
+    submitBtn.style.display = "block";
+
+    const active = testType.value === "permit"
+      ? permitQuestions
+      : driverQuestions;
+
+    active.forEach((q, i) => {
+      const div = document.createElement("div");
+      div.className = "question";
+      div.innerHTML = `<p><strong>Q${i+1}:</strong> ${q.q}</p>` +
+        q.c.map(c =>
+          `<label><input type="radio" name="q${i}" value="${c}"> ${c}</label><br>`
+        ).join("");
+      quiz.appendChild(div);
+    });
+  };
+
+  submitBtn.onclick = () => {
+    const active = testType.value === "permit"
+      ? permitQuestions
+      : driverQuestions;
+
+    let score = 0;
+
+    active.forEach((q, i) => {
+      const chosen = document.querySelector(`input[name="q${i}"]:checked`);
+      const div = quiz.children[i];
+
+      if (chosen && chosen.value === q.a) {
+        score++;
+        div.classList.add("correct");
+      } else {
+        div.classList.add("wrong");
+        div.innerHTML += `<p><strong>Correct answer:</strong> ${q.a}</p>`;
+      }
+    });
+
+    results.innerHTML = `<h2>Your Score: ${score} / ${active.length}</h2>`;
+  };
+
+});
+</script>
+
+</body>
+</html>
